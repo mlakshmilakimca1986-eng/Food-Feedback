@@ -10,8 +10,13 @@
       "**/node_modules/**",
       "functions/**",
       "upload_to_tidb.py",
+      "upload_to_firestore.py",
       "student_data - 2026.xlsx",
-      "scratch/**"
+      "scratch/**",
+      "deploy.bat",
+      "server.js",
+      "package.json",
+      "package-lock.json"
     ],
     "rewrites": [
       {
