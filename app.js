@@ -1,5 +1,5 @@
 // Change this to your deployed backend API URL (e.g., "https://food-feedback-api.onrender.com/api") if hosting the API externally.
-const API_BASE = "/api";
+const API_BASE = "https://food-feedback.onrender.com/api";
 
 let currentUser = null; // { email, role: 'warden' | 'agm' }
 let localStudentsDB = []; // Loaded from student_data.json as fallback
