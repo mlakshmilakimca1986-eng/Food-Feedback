@@ -724,6 +724,47 @@ input:focus, select:focus {
   width: 100%;
 }
 
+/* Item Feedback Subdivision Styles */
+.item-feedback-subdivision {
+  padding: 15px 0;
+  border-bottom: 1px dashed var(--border);
+}
+
+.item-feedback-subdivision:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.item-info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.item-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+  color: var(--primary);
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.item-name i {
+  color: var(--secondary);
+  font-size: 12px;
+}
+
+.item-comment-input {
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 8px 12px;
+  font-size: 13px;
+  width: 100%;
+}
+
 .submit-action-panel {
   display: flex;
   justify-content: flex-end;

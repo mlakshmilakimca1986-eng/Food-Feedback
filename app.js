@@ -35,6 +35,28 @@ const ratingLabels = {
   5: "Excellent"
 };
 
+// Helper to calculate average rating of a meal from its items (supporting legacy number ratings)
+function getOverallMealRating(ratings, meal) {
+  const mealRatingsObj = ratings[meal];
+  if (!mealRatingsObj) return 0;
+  if (typeof mealRatingsObj === 'number') {
+    return mealRatingsObj;
+  }
+  const keys = Object.keys(mealRatingsObj);
+  if (keys.length === 0) return 0;
+  
+  let sum = 0;
+  let count = 0;
+  keys.forEach(key => {
+    const val = parseInt(mealRatingsObj[key]);
+    if (val > 0) {
+      sum += val;
+      count++;
+    }
+  });
+  return count > 0 ? sum / count : 0;
+}
+
 // ==========================================================================
 // INITIALIZE APPLICATION
 // ==========================================================================
@@ -190,6 +212,45 @@ function updateMenuUI() {
   document.getElementById('preview-lunch').textContent = dailyMenu.lunch || "Not configured";
   document.getElementById('preview-snacks').textContent = dailyMenu.snacks || "Not configured";
   document.getElementById('preview-dinner').textContent = dailyMenu.dinner || "Not configured";
+
+  generateDynamicFeedbackForm();
+}
+
+function generateDynamicFeedbackForm() {
+  const meals = ['breakfast', 'lunch', 'snacks', 'dinner'];
+  
+  meals.forEach(meal => {
+    const container = document.getElementById(`meal-body-${meal}`);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    const menuText = dailyMenu[meal] || '';
+    const items = menuText.split(',').map(i => i.trim()).filter(Boolean);
+    const itemsToUse = items.length > 0 ? items : [meal.charAt(0).toUpperCase() + meal.slice(1)];
+    
+    itemsToUse.forEach(item => {
+      const safeItemName = item.replace(/[^a-zA-Z0-9]/g, '_');
+      const itemHTML = `
+        <div class="item-feedback-subdivision" data-meal="${meal}" data-item="${item}">
+          <div class="item-info-row">
+            <span class="item-name"><i class="fa-solid fa-angle-right"></i> ${item}</span>
+            <div class="star-rating-container">
+              <div class="stars" data-meal="${meal}" data-item="${item}">
+                <i class="fa-regular fa-star star-btn" data-value="1"></i>
+                <i class="fa-regular fa-star star-btn" data-value="2"></i>
+                <i class="fa-regular fa-star star-btn" data-value="3"></i>
+                <i class="fa-regular fa-star star-btn" data-value="4"></i>
+                <i class="fa-regular fa-star star-btn" data-value="5"></i>
+              </div>
+              <span class="rating-label" id="label-${meal}-${safeItemName}">Select Rating</span>
+            </div>
+          </div>
+          <input type="text" class="meal-comment-input item-comment-input" id="comment-${meal}-${safeItemName}" placeholder="Any comments for ${item}? (optional)">
+        </div>
+      `;
+      container.insertAdjacentHTML('beforeend', itemHTML);
+    });
+  });
 }
 
 function saveMenu() {
@@ -312,9 +373,17 @@ function resetFeedbackStars() {
     });
     
     const meal = starContainer.getAttribute('data-meal');
-    document.getElementById(`label-${meal}`).textContent = "Select Rating";
-    document.getElementById(`label-${meal}`).className = "rating-label";
-    document.getElementById(`comment-${meal}`).value = "";
+    const item = starContainer.getAttribute('data-item');
+    const safeItemName = item.replace(/[^a-zA-Z0-9]/g, '_');
+    const labelEl = document.getElementById(`label-${meal}-${safeItemName}`);
+    if (labelEl) {
+      labelEl.textContent = "Select Rating";
+      labelEl.className = "rating-label";
+    }
+  });
+  
+  document.querySelectorAll('.item-comment-input').forEach(input => {
+    input.value = "";
   });
 }
 
@@ -326,26 +395,27 @@ async function handleFeedbackSubmission(e) {
     return;
   }
 
-  // Gather ratings & comments
-  const meals = ['breakfast', 'lunch', 'snacks', 'dinner'];
-  const ratings = {};
-  const comments = {};
+  const ratings = { breakfast: {}, lunch: {}, snacks: {}, dinner: {} };
+  const comments = { breakfast: {}, lunch: {}, snacks: {}, dinner: {} };
   let atLeastOneRated = false;
 
-  for (const meal of meals) {
-    const starContainer = document.querySelector(`.stars[data-meal="${meal}"]`);
+  document.querySelectorAll('.stars').forEach(starContainer => {
+    const meal = starContainer.getAttribute('data-meal');
+    const item = starContainer.getAttribute('data-item');
     const rating = parseInt(starContainer.getAttribute('data-rating') || '0');
-    ratings[meal] = rating;
     
+    ratings[meal][item] = rating;
     if (rating > 0) {
       atLeastOneRated = true;
     }
-    
-    comments[meal] = document.getElementById(`comment-${meal}`).value.trim();
-  }
+
+    const safeItemName = item.replace(/[^a-zA-Z0-9]/g, '_');
+    const commentVal = document.getElementById(`comment-${meal}-${safeItemName}`).value.trim();
+    comments[meal][item] = commentVal;
+  });
 
   if (!atLeastOneRated) {
-    showToast("Please select a rating for at least one meal.", "warning");
+    showToast("Please select a rating for at least one item.", "warning");
     return;
   }
 
@@ -526,11 +596,14 @@ function updateAnalyticsUI(data) {
   data.forEach(item => {
     const r = item.ratings || {};
     ['breakfast', 'lunch', 'snacks', 'dinner'].forEach(meal => {
-      const val = parseInt(r[meal] || '0');
+      const val = getOverallMealRating(r, meal);
       if (val > 0) {
         sums[meal] += val;
         counts[meal]++;
-        ratingCounts[val]++;
+        const roundedVal = Math.round(val);
+        if (ratingCounts[roundedVal] !== undefined) {
+          ratingCounts[roundedVal]++;
+        }
       }
     });
   });
@@ -591,31 +664,71 @@ function renderFeedbackTable(data) {
   });
 }
 
-function getMealRatingHTML(rating, comment) {
-  if (!rating || rating === 0) {
+function getMealRatingHTML(mealRatingsObj, mealCommentsObj) {
+  if (!mealRatingsObj) {
     return `<span class="text-muted">-</span>`;
   }
   
-  let stars = '';
-  for(let i=1; i<=5; i++) {
-    stars += i <= rating ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>';
-  }
-
-  let commentHTML = '';
-  if (comment) {
-    commentHTML = `
-      <div class="table-comment" title="${comment}">
-        <i class="fa-regular fa-comment-dots"></i> ${comment}
+  // Legacy check
+  if (typeof mealRatingsObj === 'number') {
+    if (mealRatingsObj === 0) return `<span class="text-muted">-</span>`;
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+      stars += i <= mealRatingsObj ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>';
+    }
+    let commentHTML = '';
+    if (mealCommentsObj && typeof mealCommentsObj === 'string') {
+      commentHTML = `
+        <div class="table-comment" title="${mealCommentsObj}">
+          <i class="fa-regular fa-comment-dots"></i> ${mealCommentsObj}
+        </div>
+      `;
+    }
+    return `
+      <div class="table-meal-rating">
+        <span class="table-stars">${stars}</span>
+        ${commentHTML}
       </div>
     `;
   }
-
-  return `
-    <div class="table-meal-rating">
-      <span class="table-stars">${stars}</span>
-      ${commentHTML}
-    </div>
-  `;
+  
+  // Subdivision Object breakdown
+  const keys = Object.keys(mealRatingsObj);
+  if (keys.length === 0) {
+    return `<span class="text-muted">-</span>`;
+  }
+  
+  let html = '<div class="table-meal-items-breakdown">';
+  let ratedCount = 0;
+  
+  keys.forEach(item => {
+    const rating = parseInt(mealRatingsObj[item] || '0');
+    if (rating === 0) return;
+    ratedCount++;
+    
+    let stars = '';
+    for (let i = 1; i <= 5; i++) {
+      stars += i <= rating ? '<i class="fa-solid fa-star"></i>' : '<i class="fa-regular fa-star"></i>';
+    }
+    
+    const comment = mealCommentsObj ? (mealCommentsObj[item] || '') : '';
+    let commentHTML = '';
+    if (comment) {
+      commentHTML = `<span class="item-breakdown-comment" title="${comment}"><i class="fa-regular fa-comment-dots"></i></span>`;
+    }
+    
+    html += `
+      <div class="item-breakdown-row">
+        <span class="item-breakdown-name" title="${item}">${item}:</span>
+        <span class="table-stars">${stars}</span>
+        ${commentHTML}
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  
+  return ratedCount > 0 ? html : `<span class="text-muted">-</span>`;
 }
 
 function drawPerformanceChart(avgs) {
@@ -683,6 +796,23 @@ function drawDistributionChart(ratingCounts) {
   });
 }
 
+function getMealCSVRatingString(mealObj) {
+  if (!mealObj) return '0';
+  if (typeof mealObj === 'number') return mealObj;
+  return Object.keys(mealObj)
+    .map(item => `${item}: ${mealObj[item]}`)
+    .join(" | ");
+}
+
+function getMealCSVCommentString(commentObj) {
+  if (!commentObj) return '';
+  if (typeof commentObj === 'string') return commentObj;
+  return Object.keys(commentObj)
+    .map(item => `${item}: ${commentObj[item]}`)
+    .filter(str => !str.endsWith(": ")) // filter out empty comments
+    .join(" | ");
+}
+
 function exportFeedbackToCSV() {
   const feedbackList = currentFilteredFeedbacks.length > 0 ? currentFilteredFeedbacks : getLocalFeedback();
 
@@ -703,14 +833,14 @@ function exportFeedbackToCSV() {
       `"${(item.category || '')}"`,
       `"${(item.section || '')}"`,
       `"${(item.campus || '')}"`,
-      item.ratings.breakfast || 0,
-      `"${(item.comments.breakfast || '').replace(/"/g, '""')}"`,
-      item.ratings.lunch || 0,
-      `"${(item.comments.lunch || '').replace(/"/g, '""')}"`,
-      item.ratings.snacks || 0,
-      `"${(item.comments.snacks || '').replace(/"/g, '""')}"`,
-      item.ratings.dinner || 0,
-      `"${(item.comments.dinner || '').replace(/"/g, '""')}"`,
+      `"${getMealCSVRatingString(item.ratings.breakfast)}"`,
+      `"${(getMealCSVCommentString(item.comments.breakfast)).replace(/"/g, '""')}"`,
+      `"${getMealCSVRatingString(item.ratings.lunch)}"`,
+      `"${(getMealCSVCommentString(item.comments.lunch)).replace(/"/g, '""')}"`,
+      `"${getMealCSVRatingString(item.ratings.snacks)}"`,
+      `"${(getMealCSVCommentString(item.comments.snacks)).replace(/"/g, '""')}"`,
+      `"${getMealCSVRatingString(item.ratings.dinner)}"`,
+      `"${(getMealCSVCommentString(item.comments.dinner)).replace(/"/g, '""')}"`,
       item.submittedAt || ''
     ];
     csvContent += row.join(",") + "\n";
@@ -744,16 +874,29 @@ function generateDemoFeedback() {
 
   for (let i = 0; i < 25; i++) {
     const student = localStudentsDB[Math.floor(Math.random() * localStudentsDB.length)];
-    const brRating = Math.floor(Math.random() * 5) + 1;
-    const lnRating = Math.floor(Math.random() * 5) + 1;
-    const snRating = Math.floor(Math.random() * 5) + 1;
-    const dnRating = Math.floor(Math.random() * 5) + 1;
+    const ratings = {};
+    const comments = {};
 
-    const getComment = (rating) => {
-      if (Math.random() > 0.3) return "";
-      const pool = commentsPool[rating];
-      return pool[Math.floor(Math.random() * pool.length)];
-    };
+    ['breakfast', 'lunch', 'snacks', 'dinner'].forEach(meal => {
+      ratings[meal] = {};
+      comments[meal] = {};
+      
+      const menuText = dailyMenu[meal] || '';
+      const items = menuText.split(',').map(idx => idx.trim()).filter(Boolean);
+      const itemsToUse = items.length > 0 ? items : [meal.charAt(0).toUpperCase() + meal.slice(1)];
+      
+      itemsToUse.forEach(item => {
+        const rating = Math.floor(Math.random() * 5) + 1;
+        ratings[meal][item] = rating;
+        
+        if (Math.random() < 0.3) {
+          const pool = commentsPool[rating];
+          comments[meal][item] = pool[Math.floor(Math.random() * pool.length)];
+        } else {
+          comments[meal][item] = "";
+        }
+      });
+    });
 
     const dateOffset = Math.floor(Math.random() * 3);
     const tempDate = new Date();
@@ -769,13 +912,8 @@ function generateDemoFeedback() {
       campus: student.campus || '',
       date: dateStr,
       day: dayNameStr,
-      ratings: { breakfast: brRating, lunch: lnRating, snacks: snRating, dinner: dnRating },
-      comments: {
-        breakfast: getComment(brRating),
-        lunch: getComment(lnRating),
-        snacks: getComment(snRating),
-        dinner: getComment(dnRating)
-      },
+      ratings: ratings,
+      comments: comments,
       submittedAt: tempDate.toISOString()
     };
 
@@ -842,27 +980,33 @@ function bindUIEvents() {
   });
 
   // Star Rating clicks binding
-  document.querySelectorAll('.star-btn').forEach(btn => {
-    btn.addEventListener('click', (e) => {
-      const value = parseInt(e.target.getAttribute('data-value'));
-      const container = e.target.parentElement;
-      const meal = container.getAttribute('data-meal');
-      
-      container.setAttribute('data-rating', value);
-      container.classList.add('has-rating');
+  // Star Rating clicks delegation for dynamic stars
+  document.getElementById('feedback-submission-form').addEventListener('click', (e) => {
+    const btn = e.target.closest('.star-btn');
+    if (!btn) return;
+    
+    const value = parseInt(btn.getAttribute('data-value'));
+    const container = btn.parentElement;
+    const meal = container.getAttribute('data-meal');
+    const item = container.getAttribute('data-item');
+    const safeItemName = item.replace(/[^a-zA-Z0-9]/g, '_');
+    
+    container.setAttribute('data-rating', value);
+    container.classList.add('has-rating');
 
-      container.querySelectorAll('.star-btn').forEach((star, index) => {
-        if (index < value) {
-          star.className = "fa-solid fa-star star-btn active";
-        } else {
-          star.className = "fa-regular fa-star star-btn";
-        }
-      });
+    container.querySelectorAll('.star-btn').forEach((star, index) => {
+      if (index < value) {
+        star.className = "fa-solid fa-star star-btn active";
+      } else {
+        star.className = "fa-regular fa-star star-btn";
+      }
+    });
 
-      const label = document.getElementById(`label-${meal}`);
+    const label = document.getElementById(`label-${meal}-${safeItemName}`);
+    if (label) {
       label.textContent = ratingLabels[value];
       label.className = "rating-label active";
-    });
+    }
   });
 
   // Clear Form Button
