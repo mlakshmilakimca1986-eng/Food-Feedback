@@ -37,8 +37,8 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo.
-echo [4/4] Deploying to Firebase (Hosting and Functions)...
-call firebase deploy
+echo [4/4] Deploying to Firebase (Hosting)...
+call firebase deploy --only hosting
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] Firebase deployment failed.
     goto :error
