@@ -144,12 +144,16 @@ async function handleLogin(email, password) {
       sessionStorage.setItem('srichaitanya_session', JSON.stringify({ email: data.email, role: data.role }));
       handleUserLogin(data.email, data.role);
       return;
+    } else if (res.status === 401 || res.status === 400) {
+      // Strict rejection: if the database checked and rejected, do NOT fall back to local storage
+      showToast("Invalid Credentials. Please check email and password.", "error");
+      return;
     }
   } catch (err) {
     console.warn("API Login check failed, trying local storage check...", err);
   }
 
-  // Fallback to local Wardens Database
+  // Fallback to local Wardens Database (Only used if server/network is completely offline)
   const localWardensList = getLocalWardens();
   const matchedLocalWarden = localWardensList.find(w => w.email.toLowerCase().trim() === cleanEmail && w.password === password);
 
