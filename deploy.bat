@@ -37,7 +37,7 @@ if %ERRORLEVEL% neq 0 (
 )
 
 echo.
-echo [4/4] Deploying to Firebase (Hosting & Functions)...
+echo [4/4] Deploying to Firebase (Hosting and Functions)...
 call firebase deploy
 if %ERRORLEVEL% neq 0 (
     echo [ERROR] Firebase deployment failed.
