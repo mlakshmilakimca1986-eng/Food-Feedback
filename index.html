@@ -511,8 +511,8 @@
   <!-- html2pdf Library for PDF Slip generation -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 
-  <!-- Off-screen template for PDF Feedback Slip generation -->
-  <div id="pdf-slip-container" style="position: absolute; left: -9999px; top: -9999px; width: 1050px; background-color: white;">
+  <div style="position: fixed; top: 0; left: 0; height: 0; overflow: hidden; width: 1050px; pointer-events: none; z-index: -9999; background-color: white;">
+    <div id="pdf-slip-container" style="width: 1050px; background-color: white;">
     <div class="pdf-slip-wrapper">
       <!-- Header Section -->
       <div class="pdf-header">

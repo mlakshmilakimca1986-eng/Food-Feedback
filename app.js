@@ -616,7 +616,7 @@ async function generateFeedbackPDF(feedbackData) {
   };
 
   try {
-    await html2pdf().set(opt).from(element).save();
+    await html2pdf().from(element).set(opt).save();
     showToast("Feedback Slip PDF downloaded successfully!", "success");
   } catch (err) {
     console.error("PDF generation failed:", err);
