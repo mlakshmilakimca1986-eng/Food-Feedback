@@ -508,6 +508,76 @@
 
   </div>
 
+  <!-- html2pdf Library for PDF Slip generation -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+  <!-- Off-screen template for PDF Feedback Slip generation -->
+  <div id="pdf-slip-container" style="position: absolute; left: -9999px; top: -9999px; width: 1050px; background-color: white;">
+    <div class="pdf-slip-wrapper">
+      <!-- Header Section -->
+      <div class="pdf-header">
+        <div class="pdf-logo-container">
+          <!-- SVG Crest Logo -->
+          <svg width="70" height="70" viewBox="0 0 100 100">
+            <circle cx="50" cy="50" r="45" fill="none" stroke="#000000" stroke-width="3"/>
+            <circle cx="50" cy="50" r="38" fill="none" stroke="#000000" stroke-width="1" stroke-dasharray="3,3"/>
+            <path d="M50,22 L72,40 L72,70 L50,85 L28,70 L28,40 Z" fill="none" stroke="#000000" stroke-width="2.5"/>
+            <path d="M50,22 L50,85" fill="none" stroke="#000000" stroke-width="1"/>
+            <path d="M28,40 L72,40" fill="none" stroke="#000000" stroke-width="1"/>
+            <path d="M28,70 L72,70" fill="none" stroke="#000000" stroke-width="1"/>
+            <text x="50" y="52" font-family="sans-serif" font-size="11" font-weight="bold" text-anchor="middle" fill="#000000">SCP</text>
+            <text x="50" y="62" font-family="sans-serif" font-size="7" font-weight="bold" text-anchor="middle" fill="#000000">ESTD 1986</text>
+          </svg>
+        </div>
+        <div class="pdf-title-container">
+          <h1 class="pdf-college-title">SRI CHAITANYA PU COLLEGE</h1>
+          <h2 class="pdf-college-subtitle">BELLANDUR</h2>
+          <div class="pdf-badge-container">
+            <span class="pdf-badge">FOOD FEEDBACK SHEET</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Metadata Row (Date & Day) -->
+      <div class="pdf-metadata-row">
+        <div class="pdf-meta-item">Date: <span id="pdf-meta-date">__________________</span></div>
+        <div class="pdf-meta-item">Day: <span id="pdf-meta-day">__________________</span></div>
+      </div>
+
+      <!-- Table -->
+      <table class="pdf-table">
+        <thead>
+          <tr>
+            <th colspan="2" style="width: 30%;">Food Items</th>
+            <th style="width: 22%;">Student Name</th>
+            <th style="width: 13%;">Class</th>
+            <th style="width: 15%;">Signature</th>
+            <th style="width: 20%;">Food Feedback</th>
+          </tr>
+        </thead>
+        <tbody id="pdf-table-body">
+          <!-- Dynamic rows populated by JavaScript -->
+        </tbody>
+      </table>
+
+      <!-- Footer Legend and Thank You -->
+      <div class="pdf-footer">
+        <div class="pdf-legend-box">
+          <span>☆ - Poor</span>
+          <span>☆☆ - Average</span>
+          <span>☆☆☆ - Good</span>
+          <span>☆☆☆☆ - Very Good</span>
+          <span>☆☆☆☆☆ - Excellent</span>
+        </div>
+        <div class="pdf-thankyou-container">
+          <span class="pdf-line"></span>
+          <span class="pdf-thankyou-text">Thank you for your valuable feedback!</span>
+          <span class="pdf-line"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <!-- JS Logic -->
   <script type="module" src="app.js?v=14"></script>
 </body>

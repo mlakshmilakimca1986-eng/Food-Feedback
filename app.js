@@ -467,7 +467,161 @@ async function handleFeedbackSubmission(e) {
   } else {
     showToast("Feedback saved locally (will sync later)!", "success");
   }
+
+  // Trigger PDF Generation and Download
+  await generateFeedbackPDF(feedbackData);
+
   resetWardenForm();
+}
+
+// ==========================================================================
+// PDF SLIP GENERATOR
+// ==========================================================================
+function getMealSVGIcon(meal) {
+  switch (meal) {
+    case 'breakfast':
+      return `
+      <svg width="30" height="30" viewBox="0 0 100 100" fill="none" stroke="#000000" stroke-width="4">
+        <path d="M25 35 L60 35 A1 1 0 0 1 60 35 L60 70 A15 15 0 0 1 45 85 L40 85 A15 15 0 0 1 25 70 Z" />
+        <path d="M60 45 C70 45, 70 65, 60 65" stroke-linecap="round" />
+        <path d="M32 15 Q37 23 32 30" />
+        <path d="M42 13 Q47 21 42 28" />
+        <path d="M52 15 Q57 23 52 30" />
+        <path d="M65 65 A10 10 0 0 0 85 65 Z" />
+        <line x1="63" y1="65" x2="87" y2="65" />
+      </svg>`;
+    case 'lunch':
+      return `
+      <svg width="30" height="30" viewBox="0 0 100 100" fill="none" stroke="#000000" stroke-width="4">
+        <circle cx="50" cy="50" r="38" />
+        <circle cx="50" cy="50" r="28" stroke-dasharray="3 3" />
+        <circle cx="38" cy="38" r="9" />
+        <circle cx="62" cy="38" r="9" />
+        <path d="M35 68 C35 55 65 55 65 68 Z" />
+      </svg>`;
+    case 'snacks':
+      return `
+      <svg width="30" height="30" viewBox="0 0 100 100" fill="none" stroke="#000000" stroke-width="4">
+        <path d="M25 35 L35 85 L55 85 L65 35 Z" />
+        <line x1="45" y1="20" x2="45" y2="55" />
+        <line x1="45" y1="20" x2="60" y2="10" />
+        <polygon points="60,85 90,85 75,50" />
+      </svg>`;
+    case 'dinner':
+      return `
+      <svg width="30" height="30" viewBox="0 0 100 100" fill="none" stroke="#000000" stroke-width="4">
+        <path d="M20 70 A30 30 0 0 1 80 70 Z" />
+        <line x1="15" y1="70" x2="85" y2="70" />
+        <circle cx="50" cy="35" r="5" fill="#000000" />
+        <path d="M15 70 C15 74, 85 74, 85 70" />
+      </svg>`;
+    default:
+      return '';
+  }
+}
+
+async function generateFeedbackPDF(feedbackData) {
+  if (typeof html2pdf === 'undefined') {
+    showToast("PDF Library not loaded. Connect to the internet to download feedback slips.", "warning");
+    return;
+  }
+
+  // 1. Set Meta Info
+  document.getElementById('pdf-meta-date').textContent = formatDate(feedbackData.date);
+  document.getElementById('pdf-meta-day').textContent = feedbackData.day;
+
+  // 2. Prepare Menu Items
+  const meals = ['breakfast', 'lunch', 'snacks', 'dinner'];
+  const menuItems = {};
+  let totalItems = 0;
+
+  meals.forEach(meal => {
+    const menuText = dailyMenu[meal] || '';
+    const items = menuText.split(',').map(i => i.trim()).filter(Boolean);
+    menuItems[meal] = items.length > 0 ? items : [meal.charAt(0).toUpperCase() + meal.slice(1)];
+    totalItems += menuItems[meal].length;
+  });
+
+  // 3. Build Table Rows HTML
+  let rowsHTML = '';
+  let isFirstRow = true;
+
+  meals.forEach(meal => {
+    const items = menuItems[meal];
+    let isFirstMealRow = true;
+
+    items.forEach(item => {
+      rowsHTML += '<tr>';
+
+      // Meal Category Column (rowspan = items.length)
+      if (isFirstMealRow) {
+        const iconSVG = getMealSVGIcon(meal);
+        rowsHTML += `
+          <td class="pdf-meal-category-cell" rowspan="${items.length}">
+            <div class="pdf-meal-category-container">
+              <span class="pdf-meal-name">${meal.toUpperCase()}</span>
+              <div class="pdf-meal-icon">${iconSVG}</div>
+            </div>
+          </td>
+        `;
+        isFirstMealRow = false;
+      }
+
+      // Food Item Name Column
+      rowsHTML += `<td class="pdf-food-item-cell">${item}</td>`;
+
+      // Student details and Signature Column (rowspan = totalItems, only on the very first row)
+      if (isFirstRow) {
+        rowsHTML += `
+          <td class="pdf-student-name-cell" rowspan="${totalItems}">${feedbackData.studentName} (${feedbackData.scsNumber})</td>
+          <td class="pdf-class-cell" rowspan="${totalItems}">${feedbackData.category || '-'}</td>
+          <td class="pdf-signature-cell" rowspan="${totalItems}"></td>
+        `;
+        isFirstRow = false;
+      }
+
+      // Food Feedback Column (stars + comments)
+      const rating = feedbackData.ratings[meal]?.[item] || 0;
+      const comment = feedbackData.comments[meal]?.[item] || '';
+
+      let feedbackContent = '';
+      if (rating > 0) {
+        let stars = '';
+        for (let i = 1; i <= 5; i++) {
+          stars += i <= rating ? '★' : '☆';
+        }
+        feedbackContent += `<div class="pdf-rating-stars">${stars}</div>`;
+        if (comment) {
+          feedbackContent += `<div class="pdf-feedback-comment">"${comment}"</div>`;
+        }
+      } else {
+        feedbackContent += `<span class="pdf-no-feedback">-</span>`;
+      }
+
+      rowsHTML += `<td class="pdf-feedback-cell">${feedbackContent}</td>`;
+      rowsHTML += '</tr>';
+    });
+  });
+
+  document.getElementById('pdf-table-body').innerHTML = rowsHTML;
+
+  // 4. Trigger PDF Generation & Download
+  const element = document.getElementById('pdf-slip-container');
+  const opt = {
+    margin:       0.4,
+    filename:     `Food_Feedback_Slip_${feedbackData.scsNumber}_${feedbackData.date}.pdf`,
+    image:        { type: 'jpeg', quality: 0.98 },
+    html2canvas:  { scale: 2, useCORS: true, logging: false },
+    jsPDF:        { unit: 'in', format: 'letter', orientation: 'landscape' }
+  };
+
+  try {
+    await html2pdf().set(opt).from(element).save();
+    showToast("Feedback Slip PDF downloaded successfully!", "success");
+  } catch (err) {
+    console.error("PDF generation failed:", err);
+    showToast("PDF generation failed, but feedback was saved.", "error");
+  }
 }
 
 // ==========================================================================

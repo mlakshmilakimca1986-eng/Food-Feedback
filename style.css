@@ -1025,3 +1025,386 @@ input:focus, select:focus {
   from { transform: translateX(0); opacity: 1; }
   to { transform: translateX(120%); opacity: 0; }
 }
+
+/* ==========================================================================
+   PDF SLIP GENERATION STYLES (MATCHES LANDSCAPE Food Feedback Slip)
+   ========================================================================== */
+.pdf-slip-wrapper {
+  font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
+  color: #000000;
+  padding: 35px;
+  background-color: #ffffff;
+  width: 980px; /* target landscape printable area width */
+  margin: 0 auto;
+  box-sizing: border-box;
+}
+
+.pdf-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  margin-bottom: 25px;
+}
+
+.pdf-logo-container {
+  position: absolute;
+  left: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.pdf-title-container {
+  text-align: center;
+}
+
+.pdf-college-title {
+  font-family: 'Outfit', sans-serif;
+  font-size: 26px;
+  font-weight: 800;
+  color: #000000;
+  letter-spacing: 0.5px;
+  margin-bottom: 2px;
+}
+
+.pdf-college-subtitle {
+  font-family: 'Outfit', sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  color: #000000;
+  letter-spacing: 2px;
+  margin-bottom: 12px;
+  text-transform: uppercase;
+}
+
+.pdf-badge-container {
+  display: flex;
+  justify-content: center;
+}
+
+.pdf-badge {
+  background-color: #000000;
+  color: #ffffff;
+  padding: 6px 22px;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  border-radius: 8px;
+  letter-spacing: 1px;
+}
+
+.pdf-metadata-row {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 15px;
+  font-size: 13px;
+  font-weight: 700;
+  padding: 0 5px;
+}
+
+.pdf-meta-val {
+  font-weight: 800;
+  text-decoration: underline;
+}
+
+/* PDF Table Styles */
+.pdf-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.pdf-table th, 
+.pdf-table td {
+  border: 1.5px solid #000000;
+  padding: 8px 10px;
+  vertical-align: middle;
+  box-sizing: border-box;
+}
+
+.pdf-table th {
+  background-color: #1a1a1a;
+  color: #ffffff !important;
+  font-family: 'Outfit', sans-serif;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Category Column */
+.pdf-meal-category-cell {
+  background-color: #ffffff;
+  text-align: center;
+  font-weight: 700;
+  padding: 10px 5px !important;
+}
+
+.pdf-meal-category-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.pdf-meal-name {
+  font-family: 'Outfit', sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: 0.5px;
+}
+
+.pdf-meal-icon svg {
+  color: #000000;
+}
+
+.pdf-food-item-cell {
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+}
+
+.pdf-student-name-cell,
+.pdf-class-cell {
+  font-weight: 700;
+  font-size: 12px;
+  text-align: center;
+}
+
+.pdf-signature-cell {
+  background-color: #ffffff;
+}
+
+.pdf-feedback-cell {
+  text-align: center;
+}
+
+.pdf-rating-stars {
+  font-size: 14px;
+  color: #000000;
+  font-weight: bold;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.pdf-feedback-comment {
+  font-size: 10px;
+  font-style: italic;
+  color: #333333;
+  word-break: break-word;
+  max-width: 170px;
+  margin: 0 auto;
+}
+
+.pdf-no-feedback {
+  color: #777777;
+  font-size: 13px;
+}
+
+/* Footer Section */
+.pdf-legend-box {
+  border: 1.5px solid #000000;
+  padding: 8px 15px;
+  display: flex;
+  justify-content: space-around;
+  font-size: 11px;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  margin-bottom: 25px;
+}
+
+.pdf-thankyou-container {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 20px;
+  margin-bottom: 10px;
+}
+
+.pdf-line {
+  flex-grow: 1;
+  height: 2px;
+  background-color: #000000;
+}
+
+.pdf-thankyou-text {
+  font-family: 'Outfit', sans-serif;
+  font-size: 14px;
+  font-weight: 800;
+  font-style: italic;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 0 20px;
+  white-space: nowrap;
+}
+
+/* ==========================================================================
+   MOBILE RESPONSIVENESS AND WEB ENHANCEMENTS
+   ========================================================================== */
+@media (max-width: 768px) {
+  .main-header {
+    padding: 12px 20px;
+    flex-direction: column;
+    gap: 15px;
+    align-items: center;
+    text-align: center;
+  }
+  
+  .header-logo-area {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .college-logo {
+    width: 44px;
+    height: 44px;
+    font-size: 20px;
+  }
+
+  .college-title h1 {
+    font-size: 18px;
+  }
+  
+  .header-status {
+    width: 100%;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .status-user-badge {
+    font-size: 12px;
+    padding: 5px 12px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 200px;
+  }
+  
+  .main-content {
+    padding: 15px 10px;
+  }
+  
+  .glass-card {
+    padding: 18px 15px;
+    margin-bottom: 15px;
+    border-radius: var(--radius-sm);
+  }
+
+  .form-grid-2 {
+    grid-template-columns: 1fr;
+    gap: 10px;
+  }
+}
+
+@media (max-width: 576px) {
+  .scs-prefix {
+    padding: 10px 14px;
+    font-size: 14px;
+  }
+  
+  .scs-input-container input {
+    font-size: 16px;
+    padding: 8px 12px;
+    letter-spacing: 1px;
+  }
+  
+  .student-result-box {
+    padding: 15px;
+    margin-top: 15px;
+    min-height: 100px;
+  }
+  
+  .detail-label {
+    font-size: 11px;
+  }
+  
+  .detail-val {
+    font-size: 13px;
+  }
+
+  /* Star Rating Mobile Stacking */
+  .item-feedback-subdivision {
+    padding: 12px 0;
+  }
+
+  .item-info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  
+  .item-name {
+    font-size: 13px;
+  }
+  
+  .star-rating-container {
+    width: 100%;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  
+  .stars {
+    gap: 6px;
+  }
+  
+  .star-btn {
+    font-size: 22px;
+  }
+  
+  .rating-label {
+    font-size: 11px;
+    min-width: 80px;
+    text-align: right;
+  }
+  
+  .item-comment-input {
+    padding: 6px 10px;
+    font-size: 12px;
+  }
+
+  .meal-feedback-block {
+    padding: 15px;
+    margin-bottom: 12px;
+  }
+  
+  .meal-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 15px;
+  }
+  
+  .meal-icon-title h4 {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  .submit-action-panel {
+    flex-direction: column-reverse;
+    gap: 10px;
+    width: 100%;
+    margin-top: 20px;
+  }
+  
+  .submit-action-panel .btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 14px;
+  }
+  
+  .login-card {
+    padding: 25px 20px;
+  }
+  
+  .login-card h2 {
+    font-size: 20px;
+  }
+  
+  .login-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+  }
+}
