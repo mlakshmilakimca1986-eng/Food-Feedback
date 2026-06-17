@@ -132,6 +132,7 @@ async function handleLogin(email, password) {
   }
 
   // Check TiDB via API
+  let apiChecked = false;
   try {
     const res = await fetch(`${API_BASE}/login`, {
       method: 'POST',
@@ -139,13 +140,14 @@ async function handleLogin(email, password) {
       body: JSON.stringify({ email: cleanEmail, password })
     });
     
+    apiChecked = true;
     if (res.ok) {
       const data = await res.json();
       sessionStorage.setItem('srichaitanya_session', JSON.stringify({ email: data.email, role: data.role }));
       handleUserLogin(data.email, data.role);
       return;
-    } else if (res.status === 401 || res.status === 400) {
-      // Strict rejection: if the database checked and rejected, do NOT fall back to local storage
+    } else {
+      // Strict rejection: if the database checked and rejected (e.g. 401, 400, 500), do NOT fall back to local storage
       showToast("Invalid Credentials. Please check email and password.", "error");
       return;
     }
@@ -154,14 +156,16 @@ async function handleLogin(email, password) {
   }
 
   // Fallback to local Wardens Database (Only used if server/network is completely offline)
-  const localWardensList = getLocalWardens();
-  const matchedLocalWarden = localWardensList.find(w => w.email.toLowerCase().trim() === cleanEmail && w.password === password);
+  if (!apiChecked) {
+    const localWardensList = getLocalWardens();
+    const matchedLocalWarden = localWardensList.find(w => w.email.toLowerCase().trim() === cleanEmail && w.password === password);
 
-  if (matchedLocalWarden) {
-    sessionStorage.setItem('srichaitanya_session', JSON.stringify({ email: cleanEmail, role: 'warden' }));
-    handleUserLogin(cleanEmail, 'warden');
-  } else {
-    showToast("Invalid Credentials. Please check email and password.", "error");
+    if (matchedLocalWarden) {
+      sessionStorage.setItem('srichaitanya_session', JSON.stringify({ email: cleanEmail, role: 'warden' }));
+      handleUserLogin(cleanEmail, 'warden');
+    } else {
+      showToast("Invalid Credentials. Please check email and password.", "error");
+    }
   }
 }
 
@@ -491,17 +495,19 @@ async function renderWardensList() {
   let wardens = [];
 
   // Query TiDB wardens via API
+  let apiSuccess = false;
   try {
     const res = await fetch(`${API_BASE}/wardens`);
     if (res.ok) {
       wardens = await res.json();
+      apiSuccess = true;
     }
   } catch (err) {
     console.warn("API wardens fetch failed, loading local list instead...", err);
   }
 
-  // Fallback to local storage if API was empty or failed
-  if (wardens.length === 0) {
+  // Fallback to local storage ONLY if API was completely offline/failed
+  if (!apiSuccess && wardens.length === 0) {
     wardens = getLocalWardens();
   }
 
@@ -522,7 +528,7 @@ function populateFilterOptions() {
   const catSel = document.getElementById('filter-category');
   const secSel = document.getElementById('filter-section');
 
-  const campuses = ["ECITY_GIRLS_RESIDENTIAL", "ELECTRONIC_CITY_DS", "ECITY_NEET_BOYS", "ECITY_SCHOOL", "ECITY_ENGG_GIRLS_RESIDENTIAL"];
+  const campuses = ["ECITY_GIRLS_RESIDENTIAL", "ECITY_NEET_BOYS", "ECITY_SCHOOL", "ECITY_ENGG_GIRLS_RESIDENTIAL"];
   const categories = ["11th Class", "12th Class", "9th Class", "10th Class", "8th Class", "7th Class", "6th Class"];
   
   campusSel.innerHTML = '<option value="all">All Campuses</option>';
@@ -549,17 +555,19 @@ async function refreshAGMData() {
   let feedbackRecords = [];
 
   // Query TiDB feedbacks via API
+  let apiSuccess = false;
   try {
     const res = await fetch(`${API_BASE}/feedback`);
     if (res.ok) {
       feedbackRecords = await res.json();
+      apiSuccess = true;
     }
   } catch (err) {
     console.warn("API feedback query failed, using local database...", err);
   }
 
-  // Fallback if API returned empty
-  if (feedbackRecords.length === 0) {
+  // Fallback ONLY if API failed completely (offline)
+  if (!apiSuccess && feedbackRecords.length === 0) {
     feedbackRecords = getLocalFeedback();
   }
 
@@ -818,7 +826,7 @@ function getMealCSVCommentString(commentObj) {
 }
 
 function exportFeedbackToCSV() {
-  const feedbackList = currentFilteredFeedbacks.length > 0 ? currentFilteredFeedbacks : getLocalFeedback();
+  const feedbackList = currentFilteredFeedbacks;
 
   if (feedbackList.length === 0) {
     showToast("No feedback records available to export.", "warning");
