@@ -1,0 +1,554 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Food Feedback System - Sri Chaitanya PU College, Ecity Campus</title>
+  
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
+  <!-- Chart.js for Analytics -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  
+  <!-- Core Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Toast Notification Container -->
+  <div id="toast-container" class="toast-container"></div>
+
+  <!-- Main App Wrapper -->
+  <div class="app-container">
+    
+    <!-- Header (Always Visible) -->
+    <header class="main-header">
+      <div class="header-logo-area">
+        <div class="college-logo">
+          <i class="fa-solid fa-utensils"></i>
+        </div>
+        <div class="college-title">
+          <h1>SRI CHAITANYA PU COLLEGE</h1>
+          <p>ECITY CAMPUS &bull; FOOD FEEDBACK SYSTEM</p>
+        </div>
+      </div>
+      <div class="header-status" id="header-status">
+        <span class="status-user-badge" style="display: none;">
+          <i class="fa-solid fa-user-circle"></i> <span id="current-user-email">Warden</span>
+        </span>
+        <button id="logout-btn" class="btn btn-secondary btn-sm" style="display: none;">
+          <i class="fa-solid fa-right-from-bracket"></i> Logout
+        </button>
+      </div>
+    </header>
+
+    <main class="main-content">
+
+      <!-- ==================== LOGIN VIEW ==================== -->
+      <section id="login-view" class="view-section active-view">
+        <div class="login-card glass-card">
+          <div class="card-header text-center">
+            <div class="login-icon">
+              <i class="fa-solid fa-shield-halved"></i>
+            </div>
+            <h2>Authorized Portal Sign-In</h2>
+            <p>Access for Wardens & Area General Managers (AGM)</p>
+          </div>
+          
+          <form id="login-form">
+            <div class="form-group">
+              <label for="login-email"><i class="fa-regular fa-envelope"></i> Email Address</label>
+              <input type="email" id="login-email" required placeholder="e.g. srinivasnaidu.m@srichaitanyaschool.net" autocomplete="email">
+            </div>
+            
+            <div class="form-group">
+              <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
+              <div class="password-wrapper">
+                <input type="password" id="login-password" required placeholder="Enter password" autocomplete="current-password">
+                <button type="button" id="toggle-pwd" class="toggle-password-btn">
+                  <i class="fa-regular fa-eye"></i>
+                </button>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-block" id="login-submit-btn">
+              <i class="fa-solid fa-right-to-bracket"></i> Log In
+            </button>
+          </form>
+          
+          <!-- No footer badge needed for pure local mode -->
+        </div>
+      </section>
+
+      <!-- ==================== WARDEN VIEW ==================== -->
+      <section id="warden-view" class="view-section">
+        
+        <div class="view-layout-split">
+          
+          <!-- LEFT PANEL: Student Lookup & Menu Config -->
+          <div class="panel-left">
+            
+            <!-- Menu Manager Card -->
+            <div class="glass-card menu-setup-card card-collapsible">
+              <div class="card-header flex-between" id="menu-toggle-header" style="cursor: pointer;">
+                <h3><i class="fa-solid fa-mug-hot"></i> Today's Menu List</h3>
+                <i class="fa-solid fa-chevron-up toggle-icon" id="menu-toggle-icon"></i>
+              </div>
+              <div class="card-body" id="menu-setup-body">
+                <div class="form-grid-2">
+                  <div class="form-group">
+                    <label for="menu-breakfast">Breakfast Items</label>
+                    <input type="text" id="menu-breakfast" placeholder="e.g. Idly, Vada, Chutney">
+                  </div>
+                  <div class="form-group">
+                    <label for="menu-lunch">Lunch Items</label>
+                    <input type="text" id="menu-lunch" placeholder="e.g. Rice, Sambar, Sabji, Curd">
+                  </div>
+                  <div class="form-group">
+                    <label for="menu-snacks">Snacks Items</label>
+                    <input type="text" id="menu-snacks" placeholder="e.g. Samosa, Tea/Coffee">
+                  </div>
+                  <div class="form-group">
+                    <label for="menu-dinner">Dinner Items</label>
+                    <input type="text" id="menu-dinner" placeholder="e.g. Roti, Paneer Curry, Rice, Dal">
+                  </div>
+                </div>
+                <button class="btn btn-secondary btn-sm" id="save-menu-btn" style="margin-top: 10px;">
+                  <i class="fa-solid fa-circle-check"></i> Set Menu For Today
+                </button>
+              </div>
+            </div>
+
+            <!-- Student Search Card -->
+            <div class="glass-card search-card">
+              <div class="card-header">
+                <h3><i class="fa-solid fa-user-plus"></i> Step 1: Student Lookup</h3>
+                <p>Enter the student's admission ID to load details.</p>
+              </div>
+              <div class="card-body">
+                <div class="form-group">
+                  <label for="student-scs-input"><i class="fa-solid fa-id-card"></i> Admission Number</label>
+                  <div class="scs-input-container">
+                    <span class="scs-prefix">SCS</span>
+                    <input type="text" id="student-scs-input" placeholder="1353615" maxlength="9" autofocus>
+                  </div>
+                  <small class="form-hint">Enter the 7 or 8 digit admission code.</small>
+                </div>
+                
+                <!-- Search Result Box -->
+                <div id="student-details-box" class="student-result-box empty">
+                  <div class="empty-state">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <p>Enter ID above to fetch student details</p>
+                  </div>
+                  <div class="details-grid" style="display: none;">
+                    <div class="detail-row">
+                      <span class="detail-label">Name</span>
+                      <span class="detail-val" id="student-display-name">-</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">Class</span>
+                      <span class="detail-val" id="student-display-category">-</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">Section</span>
+                      <span class="detail-val" id="student-display-section">-</span>
+                    </div>
+                    <div class="detail-row">
+                      <span class="detail-label">Campus</span>
+                      <span class="detail-val" id="student-display-campus">-</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- RIGHT PANEL: Feedback Entry Form -->
+          <div class="panel-right">
+            <div class="glass-card feedback-form-card disabled" id="feedback-card">
+              <div class="card-overlay" id="feedback-overlay">
+                <div class="overlay-content">
+                  <i class="fa-solid fa-lock"></i>
+                  <p>Please load a valid student record to enable feedback entry</p>
+                </div>
+              </div>
+              
+              <div class="card-header flex-between">
+                <div>
+                  <h3><i class="fa-solid fa-pen-to-square"></i> Step 2: Student Feedback</h3>
+                  <p>Hand over to the student to rate their meals.</p>
+                </div>
+                <div class="feedback-date-day">
+                  <span id="feedback-date">--/--/----</span> &bull; <span id="feedback-day">---</span>
+                </div>
+              </div>
+              
+              <div class="card-body">
+                <form id="feedback-submission-form">
+                  
+                  <!-- BREAKFAST FEEDBACK -->
+                  <div class="meal-feedback-block">
+                    <div class="meal-block-header">
+                      <div class="meal-icon-title">
+                        <span class="meal-icon"><i class="fa-solid fa-mug-hot"></i></span>
+                        <div>
+                          <h4>Breakfast</h4>
+                          <span class="menu-item-preview" id="preview-breakfast">Menu not configured</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="meal-block-body">
+                      <div class="star-rating-container">
+                        <div class="stars" data-meal="breakfast">
+                          <i class="fa-regular fa-star star-btn" data-value="1"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="2"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="3"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="4"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="5"></i>
+                        </div>
+                        <span class="rating-label" id="label-breakfast">Select Rating</span>
+                      </div>
+                      <input type="text" class="meal-comment-input" id="comment-breakfast" placeholder="Any comments for Breakfast? (optional)">
+                    </div>
+                  </div>
+
+                  <!-- LUNCH FEEDBACK -->
+                  <div class="meal-feedback-block">
+                    <div class="meal-block-header">
+                      <div class="meal-icon-title">
+                        <span class="meal-icon"><i class="fa-solid fa-bowl-food"></i></span>
+                        <div>
+                          <h4>Lunch</h4>
+                          <span class="menu-item-preview" id="preview-lunch">Menu not configured</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="meal-block-body">
+                      <div class="star-rating-container">
+                        <div class="stars" data-meal="lunch">
+                          <i class="fa-regular fa-star star-btn" data-value="1"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="2"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="3"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="4"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="5"></i>
+                        </div>
+                        <span class="rating-label" id="label-lunch">Select Rating</span>
+                      </div>
+                      <input type="text" class="meal-comment-input" id="comment-lunch" placeholder="Any comments for Lunch? (optional)">
+                    </div>
+                  </div>
+
+                  <!-- SNACKS FEEDBACK -->
+                  <div class="meal-feedback-block">
+                    <div class="meal-block-header">
+                      <div class="meal-icon-title">
+                        <span class="meal-icon"><i class="fa-solid fa-cookie"></i></span>
+                        <div>
+                          <h4>Snacks</h4>
+                          <span class="menu-item-preview" id="preview-snacks">Menu not configured</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="meal-block-body">
+                      <div class="star-rating-container">
+                        <div class="stars" data-meal="snacks">
+                          <i class="fa-regular fa-star star-btn" data-value="1"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="2"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="3"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="4"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="5"></i>
+                        </div>
+                        <span class="rating-label" id="label-snacks">Select Rating</span>
+                      </div>
+                      <input type="text" class="meal-comment-input" id="comment-snacks" placeholder="Any comments for Snacks? (optional)">
+                    </div>
+                  </div>
+
+                  <!-- DINNER FEEDBACK -->
+                  <div class="meal-feedback-block">
+                    <div class="meal-block-header">
+                      <div class="meal-icon-title">
+                        <span class="meal-icon"><i class="fa-solid fa-utensils"></i></span>
+                        <div>
+                          <h4>Dinner</h4>
+                          <span class="menu-item-preview" id="preview-dinner">Menu not configured</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="meal-block-body">
+                      <div class="star-rating-container">
+                        <div class="stars" data-meal="dinner">
+                          <i class="fa-regular fa-star star-btn" data-value="1"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="2"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="3"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="4"></i>
+                          <i class="fa-regular fa-star star-btn" data-value="5"></i>
+                        </div>
+                        <span class="rating-label" id="label-dinner">Select Rating</span>
+                      </div>
+                      <input type="text" class="meal-comment-input" id="comment-dinner" placeholder="Any comments for Dinner? (optional)">
+                    </div>
+                  </div>
+
+                  <!-- Submit Panel -->
+                  <div class="submit-action-panel">
+                    <button type="button" class="btn btn-secondary btn-lg" id="clear-feedback-btn">
+                      <i class="fa-solid fa-rotate-left"></i> Clear All
+                    </button>
+                    <button type="submit" class="btn btn-primary btn-lg" id="submit-feedback-btn">
+                      <i class="fa-solid fa-circle-check"></i> Submit Feedback
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          
+        </div>
+      </section>
+
+      <!-- ==================== AGM PORTAL VIEW ==================== -->
+      <section id="agm-view" class="view-section">
+        
+        <!-- Filter Header -->
+        <div class="glass-card filter-card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-sliders"></i> Analysis Dashboard Controls</h3>
+            <p>Filter feedback data by date, campus, class, or sections in real-time.</p>
+          </div>
+          <div class="card-body">
+            <div class="filter-controls-grid">
+              <div class="form-group">
+                <label for="filter-date"><i class="fa-regular fa-calendar"></i> Date Selection</label>
+                <input type="date" id="filter-date">
+              </div>
+              <div class="form-group">
+                <label for="filter-campus"><i class="fa-solid fa-school"></i> Campus</label>
+                <select id="filter-campus">
+                  <option value="all">All Campuses</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="filter-category"><i class="fa-solid fa-graduation-cap"></i> Class (Category)</label>
+                <select id="filter-category">
+                  <option value="all">All Classes</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+              <div class="form-group">
+                <label for="filter-section"><i class="fa-solid fa-users"></i> Section</label>
+                <select id="filter-section">
+                  <option value="all">All Sections</option>
+                  <!-- Populated dynamically -->
+                </select>
+              </div>
+            </div>
+            <div class="filter-actions" style="margin-top: 15px; display: flex; justify-content: flex-end; gap: 10px;">
+              <button class="btn btn-secondary btn-sm" id="reset-filters-btn">
+                <i class="fa-solid fa-arrow-rotate-right"></i> Reset Filters
+              </button>
+              <button class="btn btn-warning btn-sm" id="btn-mock-data">
+                <i class="fa-solid fa-database"></i> Generate Demo Feedback (Mock)
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Warden Management Card (AGM Only) -->
+        <div class="glass-card warden-mgmt-card">
+          <div class="card-header">
+            <h3><i class="fa-solid fa-users-gear"></i> Warden User Management</h3>
+            <p>Create and manage login accounts for Wardens.</p>
+          </div>
+          <div class="card-body">
+            <div class="form-grid-2">
+              <form id="create-warden-form" style="display: contents;">
+                <div class="form-group">
+                  <label for="warden-email-input"><i class="fa-regular fa-envelope"></i> Warden Email</label>
+                  <input type="email" id="warden-email-input" placeholder="e.g. warden1@srichaitanyaschool.net" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                  <label for="warden-password-input"><i class="fa-solid fa-lock"></i> Password</label>
+                  <input type="password" id="warden-password-input" placeholder="Min 6 characters" required autocomplete="new-password">
+                </div>
+                <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
+                  <button type="submit" class="btn btn-primary" id="btn-create-warden">
+                    <i class="fa-solid fa-user-plus"></i> Create Warden Account
+                  </button>
+                </div>
+              </form>
+            </div>
+            
+            <!-- Active Wardens List -->
+            <div class="active-wardens-section" style="margin-top: 25px;">
+              <h4 style="margin-bottom: 10px; font-size: 15px; color: var(--primary);"><i class="fa-solid fa-list-ul"></i> Active Warden Accounts</h4>
+              <div class="table-responsive">
+                <table class="feedback-table">
+                  <thead>
+                    <tr>
+                      <th>Warden Email</th>
+                      <th>Creation Date</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="wardens-list-body">
+                    <!-- Populated dynamically -->
+                    <tr>
+                      <td>warden@srichaitanyaschool.net</td>
+                      <td>System Default</td>
+                      <td><span class="badge badge-success">Active</span></td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Metrics Overview Grid -->
+        <div class="metrics-grid">
+          
+          <div class="metric-card glass-card gradient-blue">
+            <div class="metric-icon">
+              <i class="fa-solid fa-clipboard-list"></i>
+            </div>
+            <div class="metric-info">
+              <h4 id="metric-total-submissions">0</h4>
+              <p>Total Feedback Slips</p>
+            </div>
+          </div>
+
+          <div class="metric-card glass-card gradient-orange">
+            <div class="metric-icon">
+              <i class="fa-solid fa-mug-hot"></i>
+            </div>
+            <div class="metric-info">
+              <h4 id="metric-breakfast-avg">0.0 <span class="metric-stars"><i class="fa-solid fa-star"></i></span></h4>
+              <p>Breakfast Avg</p>
+            </div>
+          </div>
+
+          <div class="metric-card glass-card gradient-yellow">
+            <div class="metric-icon">
+              <i class="fa-solid fa-bowl-food"></i>
+            </div>
+            <div class="metric-info">
+              <h4 id="metric-lunch-avg">0.0 <span class="metric-stars"><i class="fa-solid fa-star"></i></span></h4>
+              <p>Lunch Avg</p>
+            </div>
+          </div>
+
+          <div class="metric-card glass-card gradient-purple">
+            <div class="metric-icon">
+              <i class="fa-solid fa-cookie"></i>
+            </div>
+            <div class="metric-info">
+              <h4 id="metric-snacks-avg">0.0 <span class="metric-stars"><i class="fa-solid fa-star"></i></span></h4>
+              <p>Snacks Avg</p>
+            </div>
+          </div>
+
+          <div class="metric-card glass-card gradient-teal">
+            <div class="metric-icon">
+              <i class="fa-solid fa-utensils"></i>
+            </div>
+            <div class="metric-info">
+              <h4 id="metric-dinner-avg">0.0 <span class="metric-stars"><i class="fa-solid fa-star"></i></span></h4>
+              <p>Dinner Avg</p>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Charts Layout Grid -->
+        <div class="charts-layout-grid">
+          
+          <!-- Chart 1: Meal comparison -->
+          <div class="glass-card chart-card">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-chart-bar"></i> Meal Satisfaction Summary</h3>
+              <p>Average ratings across all meal services</p>
+            </div>
+            <div class="card-body chart-wrapper">
+              <canvas id="meal-performance-chart"></canvas>
+            </div>
+          </div>
+
+          <!-- Chart 2: Rating distribution -->
+          <div class="glass-card chart-card">
+            <div class="card-header">
+              <h3><i class="fa-solid fa-chart-pie"></i> Rating Distribution</h3>
+              <p>Proportion of rating tiers (1 to 5 stars) across all responses</p>
+            </div>
+            <div class="card-body chart-wrapper">
+              <canvas id="rating-distribution-chart"></canvas>
+            </div>
+          </div>
+
+        </div>
+
+        <!-- Table View Card -->
+        <div class="glass-card table-card">
+          <div class="card-header flex-between">
+            <div>
+              <h3><i class="fa-solid fa-list-check"></i> Raw Submissions Log</h3>
+              <p>Detailed chronological list of responses</p>
+            </div>
+            <div class="table-actions">
+              <div class="search-input-wrapper">
+                <i class="fa-solid fa-search search-icon"></i>
+                <input type="text" id="log-search-input" placeholder="Search by name or SCS ID...">
+              </div>
+              <button class="btn btn-primary btn-sm" id="export-csv-btn">
+                <i class="fa-solid fa-file-export"></i> Export to CSV
+              </button>
+            </div>
+          </div>
+          <div class="card-body table-responsive">
+            <table class="feedback-table" id="feedback-table">
+              <thead>
+                <tr>
+                  <th>Timestamp</th>
+                  <th>SCS ID</th>
+                  <th>Student Name</th>
+                  <th>Class / Section</th>
+                  <th>Campus</th>
+                  <th>Breakfast</th>
+                  <th>Lunch</th>
+                  <th>Snacks</th>
+                  <th>Dinner</th>
+                </tr>
+              </thead>
+              <tbody id="feedback-table-body">
+                <!-- Populated dynamically -->
+                <tr>
+                  <td colspan="9" class="text-center text-muted py-4">No feedback records found. Try generating demo feedback data.</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="main-footer">
+      <p>&copy; 2026 Sri Chaitanya PU College, Ecity Campus. Powered by Ecity Campus Online Systems.</p>
+    </footer>
+
+  </div>
+
+  <!-- JS Logic -->
+  <script type="module" src="app.js?v=5"></script>
+</body>
+</html>
