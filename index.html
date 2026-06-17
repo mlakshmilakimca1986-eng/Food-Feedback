@@ -64,13 +64,13 @@
           <form id="login-form">
             <div class="form-group">
               <label for="login-email"><i class="fa-regular fa-envelope"></i> Email Address</label>
-              <input type="email" id="login-email" required placeholder="e.g. srinivasnaidu.m@srichaitanyaschool.net" autocomplete="email">
+              <input type="email" id="login-email" required placeholder="Enter your email" autocomplete="email">
             </div>
             
             <div class="form-group">
               <label for="login-password"><i class="fa-solid fa-lock"></i> Password</label>
               <div class="password-wrapper">
-                <input type="password" id="login-password" required placeholder="Enter password" autocomplete="current-password">
+                <input type="password" id="login-password" required placeholder="Enter your password" autocomplete="current-password">
                 <button type="button" id="toggle-pwd" class="toggle-password-btn">
                   <i class="fa-regular fa-eye"></i>
                 </button>
@@ -333,11 +333,11 @@
               <form id="create-warden-form" style="display: contents;">
                 <div class="form-group">
                   <label for="warden-email-input"><i class="fa-regular fa-envelope"></i> Warden Email</label>
-                  <input type="email" id="warden-email-input" placeholder="e.g. warden1@srichaitanyaschool.net" required autocomplete="username">
+                  <input type="email" id="warden-email-input" placeholder="Enter warden email" required autocomplete="username">
                 </div>
                 <div class="form-group">
                   <label for="warden-password-input"><i class="fa-solid fa-lock"></i> Password</label>
-                  <input type="password" id="warden-password-input" placeholder="Min 6 characters" required autocomplete="new-password">
+                  <input type="password" id="warden-password-input" placeholder="Enter password (Min 6 chars)" required autocomplete="new-password">
                 </div>
                 <div style="grid-column: span 2; display: flex; justify-content: flex-end; gap: 10px; margin-top: 10px;">
                   <button type="submit" class="btn btn-primary" id="btn-create-warden">
@@ -509,6 +509,6 @@
   </div>
 
   <!-- JS Logic -->
-  <script type="module" src="app.js?v=13"></script>
+  <script type="module" src="app.js?v=14"></script>
 </body>
 </html>
