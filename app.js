@@ -96,7 +96,8 @@ async function initApp() {
 function getLocalWardens() {
   const saved = localStorage.getItem('srichaitanya_wardens_db');
   return saved ? JSON.parse(saved) : [
-    { email: 'warden@srichaitanyaschool.net', password: 'Warden@123', createdAt: new Date().toISOString() }
+    { email: 'warden@srichaitanyaschool.net', password: 'Warden@123', createdAt: new Date().toISOString() },
+    { email: 'mlakshmi.ecity@srichaitanyacollege.net', password: '123456', createdAt: new Date().toISOString() }
   ];
 }
 
@@ -140,22 +141,24 @@ async function handleLogin(email, password) {
       body: JSON.stringify({ email: cleanEmail, password })
     });
     
-    apiChecked = true;
     if (res.ok) {
       const data = await res.json();
       sessionStorage.setItem('srichaitanya_session', JSON.stringify({ email: data.email, role: data.role }));
       handleUserLogin(data.email, data.role);
       return;
-    } else {
-      // Strict rejection: if the database checked and rejected (e.g. 401, 400, 500), do NOT fall back to local storage
+    } else if (res.status === 401 || res.status === 400) {
+      // Strict rejection: only if credentials are explicitly invalid
+      apiChecked = true;
       showToast("Invalid Credentials. Please check email and password.", "error");
       return;
+    } else {
+      console.warn(`API server returned status ${res.status}. Trying offline local storage fallback...`);
     }
   } catch (err) {
     console.warn("API Login check failed, trying local storage check...", err);
   }
 
-  // Fallback to local Wardens Database (Only used if server/network is completely offline)
+  // Fallback to local Wardens Database (Used if server is offline or returns server error 5xx)
   if (!apiChecked) {
     const localWardensList = getLocalWardens();
     const matchedLocalWarden = localWardensList.find(w => w.email.toLowerCase().trim() === cleanEmail && w.password === password);
@@ -163,6 +166,7 @@ async function handleLogin(email, password) {
     if (matchedLocalWarden) {
       sessionStorage.setItem('srichaitanya_session', JSON.stringify({ email: cleanEmail, role: 'warden' }));
       handleUserLogin(cleanEmail, 'warden');
+      showToast("Logged in via offline mode.", "success");
     } else {
       showToast("Invalid Credentials. Please check email and password.", "error");
     }
