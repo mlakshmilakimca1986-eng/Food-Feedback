@@ -1032,7 +1032,7 @@ input:focus, select:focus {
 .pdf-slip-wrapper {
   font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif;
   color: #000000;
-  padding: 35px;
+  padding: 20px;
   background-color: #ffffff;
   width: 980px; /* target landscape printable area width */
   margin: 0 auto;
@@ -1044,7 +1044,7 @@ input:focus, select:focus {
   align-items: center;
   justify-content: center;
   position: relative;
-  margin-bottom: 25px;
+  margin-bottom: 15px;
 }
 
 .pdf-logo-container {
@@ -1060,20 +1060,20 @@ input:focus, select:focus {
 
 .pdf-college-title {
   font-family: 'Outfit', sans-serif;
-  font-size: 26px;
+  font-size: 24px;
   font-weight: 800;
   color: #000000;
   letter-spacing: 0.5px;
-  margin-bottom: 2px;
+  margin-bottom: 0px;
 }
 
 .pdf-college-subtitle {
   font-family: 'Outfit', sans-serif;
-  font-size: 15px;
+  font-size: 13px;
   font-weight: 700;
   color: #000000;
   letter-spacing: 2px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   text-transform: uppercase;
 }
 
@@ -1085,19 +1085,19 @@ input:focus, select:focus {
 .pdf-badge {
   background-color: #000000;
   color: #ffffff;
-  padding: 6px 22px;
+  padding: 4px 18px;
   font-family: 'Outfit', sans-serif;
   font-weight: 700;
-  font-size: 13px;
-  border-radius: 8px;
+  font-size: 12px;
+  border-radius: 6px;
   letter-spacing: 1px;
 }
 
 .pdf-metadata-row {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 15px;
-  font-size: 13px;
+  margin-bottom: 10px;
+  font-size: 12px;
   font-weight: 700;
   padding: 0 5px;
 }
@@ -1111,19 +1111,19 @@ input:focus, select:focus {
 .pdf-table {
   width: 100%;
   border-collapse: collapse;
-  margin-bottom: 20px;
+  margin-bottom: 15px;
 }
 
 .pdf-table th, 
 .pdf-table td {
   border: 1.5px solid #000000;
-  padding: 8px 10px;
+  padding: 5px 8px;
   vertical-align: middle;
   box-sizing: border-box;
 }
 
 .pdf-table th {
-  background-color: #1a1a1a;
+  background-color: #000000;
   color: #ffffff !important;
   font-family: 'Outfit', sans-serif;
   font-size: 11px;

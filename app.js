@@ -548,7 +548,6 @@ async function generateFeedbackPDF(feedbackData) {
 
   // 3. Build Table Rows HTML
   let rowsHTML = '';
-  let isFirstRow = true;
 
   meals.forEach(meal => {
     const items = menuItems[meal];
@@ -574,15 +573,12 @@ async function generateFeedbackPDF(feedbackData) {
       // Food Item Name Column
       rowsHTML += `<td class="pdf-food-item-cell">${item}</td>`;
 
-      // Student details and Signature Column (rowspan = totalItems, only on the very first row)
-      if (isFirstRow) {
-        rowsHTML += `
-          <td class="pdf-student-name-cell" rowspan="${totalItems}">${feedbackData.studentName} (${feedbackData.scsNumber})</td>
-          <td class="pdf-class-cell" rowspan="${totalItems}">${feedbackData.category || '-'}</td>
-          <td class="pdf-signature-cell" rowspan="${totalItems}"></td>
-        `;
-        isFirstRow = false;
-      }
+      // Student details and Signature Column (Individual cell per row to draw horizontal grid lines)
+      rowsHTML += `
+        <td class="pdf-student-name-cell">${feedbackData.studentName}</td>
+        <td class="pdf-class-cell">${feedbackData.category || '-'}</td>
+        <td class="pdf-signature-cell"></td>
+      `;
 
       // Food Feedback Column (stars + comments)
       const rating = feedbackData.ratings[meal]?.[item] || 0;
@@ -612,7 +608,7 @@ async function generateFeedbackPDF(feedbackData) {
   // 4. Trigger PDF Generation & Download
   const element = document.getElementById('pdf-slip-container');
   const opt = {
-    margin:       0.4,
+    margin:       0.2,
     filename:     `Food_Feedback_Slip_${feedbackData.scsNumber}_${feedbackData.date}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { scale: 2, useCORS: true, logging: false },
